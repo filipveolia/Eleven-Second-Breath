@@ -1,6 +1,6 @@
 // Keeps the app working offline. Bump VERSION whenever you change a file,
 // so phones pick up the new copy.
-const VERSION = "breath-v1";
+const VERSION = "breath-v2";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];
 
 self.addEventListener("install", e => {

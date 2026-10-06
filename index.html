@@ -142,7 +142,7 @@ select {
         </select>
       </label>
     </div>
-    <p class="note" id="note">Follow the dot: breathe in as it rises, out as it falls. Space bar starts and pauses.</p>
+    <p class="note" id="note">Follow the dot: breathe in as it rises, out as it falls.</p>
   </div>
 </div>
 
@@ -318,7 +318,7 @@ select {
     running = false; done = false; elapsed = 0; lastTs = null;
     if (pendingInhale !== null) { inhale = pendingInhale; pendingInhale = null; updateRatioUI(); }
     $("startBtn").textContent = "Start";
-    $("note").textContent = "Follow the dot: breathe in as it rises, out as it falls. Space bar starts and pauses.";
+    $("note").textContent = "Follow the dot: breathe in as it rises, out as it falls.";
     releaseWake();
     refresh();
   }
