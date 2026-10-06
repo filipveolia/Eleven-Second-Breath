@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E4EBEA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1716" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Breath">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>Eleven-Second Breath</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one quiet screen. A 16:9 breath wave centered in the space between the title and the controls pinned at the bottom. */
+:root {
+  --bg: #E4EBEA;
+  --surface: #F1F5F4;
+  --ink: #14302F;
+  --muted: #5A7270;
+  --line: #C3D1CE;
+  --accent: #2C7A73;
+  --display: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B1716; --surface: #12211F; --ink: #DAE8E4; --muted: #87A09B;
+    --line: #23403B; --accent: #7CC9BC;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B1716; --surface: #12211F; --ink: #DAE8E4; --muted: #87A09B;
+  --line: #23403B; --accent: #7CC9BC;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); box-sizing: border-box; }
+* { -webkit-tap-highlight-color: transparent; }
+body {
+  margin: 0; -webkit-user-select: none; user-select: none;
+  background: var(--bg); color: var(--ink);
+  font: 15px/1.5 var(--body);
+  padding-inline: 16px;
+  box-sizing: border-box;
+}
+.app {
+  max-width: 1200px; height: 100%; margin: 0 auto;
+  display: grid; grid-template-rows: auto 1fr auto;
+  gap: 14px; padding-block: 18px 22px; box-sizing: border-box; min-height: 520px;
+}
+header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+h1 { font: 400 22px/1.2 var(--display); margin: 0; letter-spacing: -0.01em; }
+h1 em { color: var(--accent); }
+.rate { font: 12px/1.4 var(--mono); color: var(--muted); letter-spacing: 0.02em; }
+
+.stage { display: flex; justify-content: center; align-items: center; min-height: 0; }
+.wave {
+  position: relative; aspect-ratio: 16 / 9; max-width: 100%;
+  width: min(100%, max(300px, calc((100vh - 360px) * 16 / 9)));
+  width: min(100%, max(300px, calc((100svh - 360px) * 16 / 9)));
+}
+#waveCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+.controls { display: grid; gap: 14px; }
+.stats { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; }
+.stat { display: grid; justify-items: center; }
+.stat b { font: 500 18px var(--mono); font-variant-numeric: tabular-nums; }
+.stat span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); }
+.row { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.primary {
+  font: 500 15px var(--body); color: var(--bg); background: var(--ink);
+  border: 0; border-radius: 999px; padding: 12px 30px; cursor: pointer; min-width: 140px;
+}
+.ghost {
+  font: 500 14px var(--body); color: var(--ink); background: transparent;
+  border: 1px solid var(--line); border-radius: 999px; padding: 11px 18px; cursor: pointer;
+}
+button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.field { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--surface); }
+.seg button {
+  font: 400 13px var(--mono); color: var(--muted); background: transparent; border: 0;
+  border-radius: 999px; padding: 6px 12px; cursor: pointer; font-variant-numeric: tabular-nums;
+}
+.seg button[aria-checked="true"] { background: var(--ink); color: var(--bg); }
+select {
+  font: 400 13px var(--mono); color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px;
+}
+.note { text-align: center; font-size: 12px; color: var(--muted); margin: 0; }
+@media (max-width: 480px) {
+  .stats { gap: 18px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Eleven-second <em>breath</em></h1>
+    <div class="rate" id="rateLabel">5.5 s in · 5.5 s out · 5.45 breaths/min</div>
+  </header>
+
+  <div class="stage">
+    <div class="wave" id="wave">
+      <canvas id="waveCanvas" aria-hidden="true"></canvas>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="stats">
+      <div class="stat"><b id="breaths">0</b><span>Breaths</span></div>
+      <div class="stat"><b id="elapsed">0:00</b><span>Elapsed</span></div>
+      <div class="stat"><b id="remaining">10:00</b><span>Remaining</span></div>
+    </div>
+    <div class="row">
+      <button class="primary" id="startBtn" type="button">Start</button>
+      <button class="ghost" id="resetBtn" type="button">Reset</button>
+    </div>
+    <div class="row">
+      <div class="field">Rhythm
+        <div class="seg" role="radiogroup" aria-label="Inhale and exhale split" id="ratioSeg">
+          <button type="button" role="radio" data-in="5.5" id="r55">5.5 / 5.5</button>
+          <button type="button" role="radio" data-in="4.5" id="r45">4.5 / 6.5</button>
+          <button type="button" role="radio" data-in="4" id="r40">4 / 7</button>
+        </div>
+      </div>
+      <label class="field" for="sessionSel">Session
+        <select id="sessionSel">
+          <option value="5">5 min</option>
+          <option value="10" selected>10 min</option>
+          <option value="15">15 min</option>
+          <option value="20">20 min</option>
+          <option value="0">Open</option>
+        </select>
+      </label>
+    </div>
+    <p class="note" id="note">Follow the dot: breathe in as it rises, out as it falls. Space bar starts and pauses.</p>
+  </div>
+</div>
+
+<script>
+(() => {
+  const CYCLE = 11;
+  const WINDOW = 27.5;      // seconds of wave visible (2.5 breaths)
+  const NOW_AT = 0.6;       // the dot sits 60% across
+  const $ = id => document.getElementById(id);
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+
+  let inhale = parseFloat(store.get("eb.inhale", "5.5"));
+  if (![5.5, 4.5, 4].includes(inhale)) inhale = 5.5;
+  let pendingInhale = null;
+  let sessionMin = parseInt(store.get("eb.session", "10"), 10);
+  if (![0, 5, 10, 15, 20].includes(sessionMin)) sessionMin = 10;
+  $("sessionSel").value = String(sessionMin);
+
+  let running = false, done = false;
+  let elapsed = 0, lastTs = null, wakeLock = null;
+
+  // Lung volume 0..1 at time t: a half sine up, a half sine down.
+  function volumeAt(t, inh) {
+    if (t < 0) return 0;
+    const c = t % CYCLE;
+    if (c < inh) return (1 - Math.cos(Math.PI * c / inh)) / 2;
+    return (1 + Math.cos(Math.PI * (c - inh) / (CYCLE - inh))) / 2;
+  }
+
+  // Canvas drawing. One breath is precomputed as a list of points; each frame
+  // only shifts and strokes it. Each breath is its own subpath, so the dashes
+  // stay fixed on the curve and only slide sideways.
+  const canvas = $("waveCanvas");
+  const ctx = canvas.getContext("2d");
+  let W = 640, H = 360, dpr = 1, breath = [], colors = {};
+  const PAD_Y = 14;
+  const yOf = v => H - PAD_Y - v * (H - 2 * PAD_Y);
+
+  function readColors() {
+    const cs = getComputedStyle(document.documentElement);
+    colors = {
+      accent: cs.getPropertyValue("--accent").trim(),
+      muted: cs.getPropertyValue("--muted").trim(),
+      bg: cs.getPropertyValue("--bg").trim()
+    };
+  }
+  function measure() {
+    const r = canvas.getBoundingClientRect();
+    W = Math.max(200, r.width); H = Math.max(110, r.height);
+    dpr = Math.min(window.devicePixelRatio || 1, 3);
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    buildBreath();
+    draw();
+  }
+  function buildBreath() {
+    const pps = W / WINDOW, steps = 96;
+    breath = [];
+    for (let j = 0; j <= steps; j++) {
+      const t = CYCLE * j / steps;
+      breath.push([t * pps, yOf(volumeAt(t, inhale))]);
+    }
+  }
+
+  function strokeBreaths(from, to, color, width, dash) {
+    const pps = W / WINDOW, now = W * NOW_AT;
+    ctx.beginPath();
+    for (let k = Math.max(0, Math.floor(from / CYCLE)); k * CYCLE < to; k++) {
+      const x0 = now + (k * CYCLE - elapsed) * pps;
+      for (let j = 0; j < breath.length; j++) {
+        const p = breath[j];
+        j ? ctx.lineTo(x0 + p[0], p[1]) : ctx.moveTo(x0 + p[0], p[1]);
+      }
+    }
+    ctx.strokeStyle = color; ctx.lineWidth = width;
+    ctx.setLineDash(dash);
+    ctx.stroke();
+  }
+
+  function draw() {
+    const now = W * NOW_AT;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+
+    const tStart = elapsed - WINDOW * NOW_AT, tEnd = elapsed + WINDOW * (1 - NOW_AT);
+    // Future, dashed, to the right of the dot.
+    ctx.save();
+    ctx.beginPath(); ctx.rect(now, 0, W - now, H); ctx.clip();
+    ctx.globalAlpha = 0.7;
+    strokeBreaths(Math.max(0, elapsed - CYCLE), tEnd, colors.muted, 2, [4, 6]);
+    ctx.restore();
+    // Past, solid, to the left of the dot.
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, 0, now, H); ctx.clip();
+    strokeBreaths(tStart, elapsed + 0.01, colors.accent, 3, []);
+    ctx.restore();
+    // The dot.
+    ctx.beginPath();
+    ctx.arc(now, yOf(volumeAt(elapsed, inhale)), 7, 0, Math.PI * 2);
+    ctx.fillStyle = colors.accent; ctx.fill();
+  }
+
+  function fmt(s) {
+    s = Math.max(0, Math.floor(s));
+    return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  }
+  const sessionEnd = () => sessionMin > 0 ? Math.ceil(sessionMin * 60 / CYCLE) * CYCLE : Infinity;
+
+  // Text only changes once a second, so only touch the DOM when it does.
+  const shown = {};
+  function setText(id, txt) { if (shown[id] !== txt) { shown[id] = txt; $(id).textContent = txt; } }
+  function updateStats() {
+    setText("breaths", String(Math.floor(elapsed / CYCLE)));
+    setText("elapsed", fmt(elapsed));
+    setText("remaining", sessionMin > 0 ? fmt(sessionEnd() - elapsed) : "open");
+  }
+
+  function updateRatioUI() {
+    for (const b of $("ratioSeg").querySelectorAll("button")) {
+      b.setAttribute("aria-checked", String(parseFloat(b.dataset.in) === (pendingInhale ?? inhale)));
+    }
+    $("rateLabel").textContent = `${inhale} s in · ${CYCLE - inhale} s out · ${(60 / CYCLE).toFixed(2)} breaths/min`;
+    buildBreath();
+  }
+
+  async function requestWake() {
+    try { if ("wakeLock" in navigator) wakeLock = await navigator.wakeLock.request("screen"); } catch (e) { wakeLock = null; }
+  }
+  function releaseWake() { try { wakeLock && wakeLock.release(); } catch (e) {} wakeLock = null; }
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && running) requestWake();
+  });
+
+  // The loop only runs while breathing; at rest the page is drawn once.
+  let rafId = null;
+  function frame(ts) {
+    rafId = null;
+    if (!running) return;
+    if (lastTs !== null) {
+      const prevCycle = Math.floor(elapsed / CYCLE);
+      elapsed += Math.min(0.25, (ts - lastTs) / 1000);
+      if (pendingInhale !== null && Math.floor(elapsed / CYCLE) !== prevCycle) {
+        inhale = pendingInhale; pendingInhale = null; updateRatioUI();
+      }
+      if (elapsed >= sessionEnd()) {
+        elapsed = sessionEnd(); running = false; done = true; releaseWake();
+        $("startBtn").textContent = "Again";
+        $("note").textContent = `Session complete: ${Math.round(elapsed / CYCLE)} slow breaths. Take a moment before you get up.`;
+      }
+    }
+    lastTs = ts;
+    draw(); updateStats();
+    if (running) rafId = requestAnimationFrame(frame);
+  }
+  function refresh() { draw(); updateStats(); }
+
+  function start() {
+    if (done) reset();
+    running = true; lastTs = null;
+    $("startBtn").textContent = "Pause";
+    requestWake();
+    if (rafId === null) rafId = requestAnimationFrame(frame);
+  }
+  function pause() {
+    running = false;
+    $("startBtn").textContent = "Resume";
+    releaseWake();
+  }
+  function reset() {
+    running = false; done = false; elapsed = 0; lastTs = null;
+    if (pendingInhale !== null) { inhale = pendingInhale; pendingInhale = null; updateRatioUI(); }
+    $("startBtn").textContent = "Start";
+    $("note").textContent = "Follow the dot: breathe in as it rises, out as it falls. Space bar starts and pauses.";
+    releaseWake();
+    refresh();
+  }
+
+  $("startBtn").addEventListener("click", () => running ? pause() : start());
+  $("resetBtn").addEventListener("click", reset);
+  $("ratioSeg").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    const v = parseFloat(b.dataset.in);
+    store.set("eb.inhale", String(v));
+    if (running || elapsed > 0) pendingInhale = v === inhale ? null : v;   // switch at the next breath
+    else inhale = v;
+    updateRatioUI(); refresh();
+  });
+  $("sessionSel").addEventListener("change", e => {
+    sessionMin = parseInt(e.target.value, 10); store.set("eb.session", String(sessionMin));
+    if (done) { done = false; $("startBtn").textContent = elapsed > 0 ? "Resume" : "Start"; }
+    refresh();
+  });
+  document.addEventListener("keydown", e => {
+    if (e.code === "Space" && !["BUTTON", "SELECT", "INPUT"].includes(document.activeElement.tagName)) {
+      e.preventDefault(); running ? pause() : start();
+    }
+  });
+  if (window.ResizeObserver) new ResizeObserver(measure).observe(canvas);
+  else window.addEventListener("resize", measure);
+  const scheme = window.matchMedia && matchMedia("(prefers-color-scheme: dark)");
+  const recolor = () => { readColors(); draw(); };
+  scheme && scheme.addEventListener && scheme.addEventListener("change", recolor);
+  new MutationObserver(recolor).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  readColors();
+  updateRatioUI();
+  measure();
+  updateStats();
+})();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>

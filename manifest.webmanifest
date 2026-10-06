@@ -1,0 +1,16 @@
+{
+  "name": "Eleven-Second Breath",
+  "short_name": "Breath",
+  "description": "A slow 11-second breathing guide.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#E4EBEA",
+  "theme_color": "#E4EBEA",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
